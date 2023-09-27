@@ -1,6 +1,7 @@
 #include<iostream>
 #include<queue>
 #include<cstdlib>
+#include<stack>
 using namespace std;
 
 class Node
@@ -23,9 +24,11 @@ class BinaryTree
 {
 	public:
 		Node *root;
+		int diameter_tree;
 		BinaryTree(int key)
 		{
 			this->root = new Node(key);
+			this->diameter_tree = 0;
 
 		}
 
@@ -69,6 +72,30 @@ class BinaryTree
 			}	
 
 		}
+		void inorder_itr(Node* root)
+		{
+			if(root == nullptr)
+				return;
+			stack<Node*> st;
+			st.push(root);
+			while(st.empty() == false)
+			{
+
+				while(root)
+				{
+					st.push(root->left);
+					root = root->left;
+				}
+				root = st.top();
+				st.pop();
+				cout<<root->key<<" ";
+				root = root->right;
+				
+			}
+		}
+
+
+
 
 		void pre_order(Node* root)
 		{
@@ -203,7 +230,58 @@ class BinaryTree
 		root->right = insert_inorder_preorder(inorder, preorder, inIdx+1, ei);
 		return root;
 	}
-		
+	int count_leaf(Node* root)
+	{
+		if(root == nullptr)
+			return 0;
+		if(root->left == nullptr && root->right == nullptr)
+			return 1;
+		return count_leaf(root->left) + count_leaf(root->right);
+	}
+	int diameter(Node* root)
+	{	//Diameter of a tree is the maximum distance between two leaf nodes
+		if(root == nullptr)
+			return 0;
+		int d1 = 1+ height(root->left) + height(root->right);
+		int d2 = diameter(root->left);
+		int d3 = diameter(root->right);
+
+		return max(d1, max(d2,d3));
+		/* Method 2*/
+		/*
+		 * if(root == nullptr)
+		 * 	return 0;
+		 * int lh = diameter_tree(root->left);
+		 * int rh = diameter_tree(root->right);
+		 * diameter = max(diameter, 1+lh+rh);
+		 * return 1+max(lh,rh);*/
+	}
+
+	bool find_path(Node* root, vector<Node*> &p, int n)
+	{
+		if(root == nullptr)
+			return false;
+		p.push_back(root);
+		if(root->key == n)
+			return true;
+		if(find_path(root->left, p, n) || find_path(root->right, p, n))
+			return true;
+		p.pop_back();
+		return false;
+	}
+
+	Node* least_common_ancestor(Node* root, int a, int b)
+	{
+		vector<Node*> p1, p2;
+		if(find_path(root, p1, a) == false || find_path(root, p2, b) == false)
+			return nullptr;
+		for(int i = 0; i<p1.size()-1 && i<p2.size()-1; i++)
+			{
+				if(p1[i+1] != p2[i+1])
+					return p1[i];
+			}
+		return nullptr;
+	}		
 	// Public interface with default parameter values
 	
     	void insert(int key)
@@ -214,6 +292,10 @@ class BinaryTree
 	{
         	in_order(this->root);
     	}
+	void inorder_itr()
+	{
+		return inorder_itr(this->root);
+	}
 
     	void pre_order() 
 	{
@@ -252,6 +334,14 @@ class BinaryTree
 	int max_tree_width()
 	{
 		return max_tree_width(this->root);
+	}
+	int count_leaf()
+	{
+		return count_leaf(this->root);
+	}
+	Node* least_common_ancestor(int a, int b)
+	{
+		return least_common_ancestor(this->root, a, b);
 	}
 };
 
@@ -293,5 +383,11 @@ int main()
 	btree2->pre_order();
 	cout<<"LevelOrder: ";
 	btree2->level_order();
+	cout<<endl<<"number of leaf nodes:" <<btree->count_leaf()<<endl;
+	Node* least_common_node = btree->least_common_ancestor(40,60);
+	cout<<"Least common ancesstor of 40 and 60 is: "<<least_common_node->key<<endl;
+	cout<<"Iterative inorder traversal: ";
+	btree->inorder_itr();
+	cout<<endl;
 	return 0;
 }
