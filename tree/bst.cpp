@@ -33,6 +33,7 @@ class BST
 		{
 			delete(root);
 		}
+
 		void insert(int data)
 		{
 			Node* newNode = new Node(data);
